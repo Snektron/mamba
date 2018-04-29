@@ -58,6 +58,7 @@ The turing machine's delta function is read from a file and has the following st
 
 To execute a turing machine run `mamba run <source>`. The initial tape can either be specified using
 `-i <input>`, via a file with `-f <file>`. The input isnt specified via `-i` or `-f` its read from stdin.
+A debug `-d` flag can be given to print the tape after each step. 
 
 ## Latex generation
 
