@@ -1,0 +1,77 @@
+use ast::{Program, TransitionArm, Pattern};
+use dtm::{State, TapeSymbol, Symbol, Move, InputAlphabet};
+use utility::MultiMap;
+
+grammar;
+
+List<T>: Vec<T> = <a:(<T> ",")*> <b:T>
+    => {
+        let mut a = a;
+        a.push(b);
+        a
+    };
+
+pub Program: Program = <alphabet:Alphabet> <accept:Accept> <reject:Reject> <transitions:Transitions>
+    => Program {
+        alphabet,
+        accept,
+        reject,
+        states: transitions.0,
+        transitions: transitions.1
+    };
+
+Transitions: (Vec<State>, MultiMap<State, TransitionArm>) = Transition+
+    => {
+        let mut states = Vec::new();
+        let mut map = MultiMap::new();
+        for trans in <> {
+            states.push(trans.0.clone());
+            map.insert_all(trans.0, trans.1);
+        }
+        (states, map)
+    };
+
+Transition: (State, Vec<TransitionArm>) = <from:State> <arms:TransArm> => (from, arms);
+
+TransArm: Vec<TransitionArm> = {
+    ShortTransArm => vec![<>],
+    BlockTransArm
+};
+
+BlockTransArm: Vec<TransitionArm> = "{" <ShortTransArm+> "}";
+
+ShortTransArm: TransitionArm = <read:Pattern> "->" <to:State> <write:Pattern> <mov:Move>
+    => TransitionArm {
+        read,
+        to,
+        write,
+        mov
+    };
+
+Alphabet: InputAlphabet = "alphabet" ":" <List<Symbol>> ";" => <>;
+
+Accept: State = "accept" ":" <State> ";";
+
+Reject: State = "reject" ":" <State> ";";
+
+Pattern: Pattern = {
+    "*" => Pattern::Wildcard,
+    TapeSymbol => Pattern::TapeSymbol(<>)
+};
+
+TapeSymbol: TapeSymbol = {
+    Symbol => TapeSymbol::Symbol(<>),
+    "_" => TapeSymbol::Blanco
+};
+
+Symbol: Symbol = Ident => <>;
+
+State: State = Ident => <>;
+
+Ident: String = r"[0-9A-Za-z]+" => <>.to_owned();
+
+Move: Move = {
+    "<" => Move::Left,
+    "!" => Move::None,
+    ">" => Move::Right
+};

@@ -1,0 +1,13 @@
+[package]
+name = "mamba"
+version = "0.1.0"
+authors = ["Robin Voetter"]
+
+[dependencies]
+lalrpop-util = "0.15.1"
+regex = "0.2.1"
+clap = "2.31.2"
+lazy_static = "1.0"
+
+[build-dependencies]
+lalrpop = "0.15.1"
