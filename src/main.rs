@@ -124,25 +124,7 @@ fn main() {
         run(matches)
     } else if let Some(matches) = matches.subcommand_matches("latex") {
         latex(matches);
+    } else {
+        eprintln!("Error: Subcommand required, see mamba --help")
     }
-
-    //println!("{}", matches.value_of("source").unwrap());
-
-    // let program = from_utf8(include_bytes!("test.mb")).unwrap();
-    // let program = match Parser::new().parse(program) {
-    //     Ok(x) => x,
-    //     Err(x) => panic!("{}", x)
-    // };
-
-    // let dtm = match construct::construct_dtm(program) {
-    //     Ok(x) => x,
-    //     Err(x) => panic!("{}", x)
-    // };
-
-    // println!("{}", dtm.latex());
-
-    // let tape = "1 0 1 0 0".parse::<Tape>().unwrap();
-    // let i = Interpreter::new(&dtm, tape);
-
-    // println!("{:?}", i.execute(true))
 }
