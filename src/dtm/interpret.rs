@@ -41,7 +41,11 @@ pub struct Tape {
 }
 
 impl Tape {
-    pub fn new(input: Vec<TapeSymbol>) -> Self {
+    pub fn new(mut input: Vec<TapeSymbol>) -> Self {
+        if input.len() == 0 {
+            input.push(TapeSymbol::Blanco)
+        }
+
         Self {
             negative: Vec::new(),
             positive: input,

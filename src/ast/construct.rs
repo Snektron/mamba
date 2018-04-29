@@ -2,6 +2,7 @@ use std::collections::HashSet as Set;
 use std::error::Error;
 use std::fmt;
 use dtm::{TuringMachine, State, TapeSymbol, Symbol, Transition, Transitions, InputAlphabet, Alphabet};
+use dtm::interpret::Outcome;
 use ast::{Program, TransitionArm, Pattern};
 
 #[derive(Debug)]
@@ -11,7 +12,9 @@ pub enum ConstructionError {
     DuplicateSymbol(Symbol),
     UndefinedSymbol(Symbol),
     UndefinedState(State),
-    WildcardInArm(State)
+    WildcardInArm(State),
+    OutcomeRedefinition(Outcome)
+
 }
 
 impl Error for ConstructionError {
@@ -22,7 +25,8 @@ impl Error for ConstructionError {
             ConstructionError::DuplicateSymbol(..) => "duplicate alphabet symbol",
             ConstructionError::UndefinedSymbol(..) => "undefined symbol",
             ConstructionError::UndefinedState(..) => "undefined state",
-            ConstructionError::WildcardInArm(..) => "wildcard in arm"
+            ConstructionError::WildcardInArm(..) => "wildcard in arm",
+            ConstructionError::OutcomeRedefinition(..) => "outcome redefinition"
         }
     }
 }
@@ -64,6 +68,9 @@ impl fmt::Display for ConstructionError {
             },
             ConstructionError::WildcardInArm(ref state) => {
                 write!(f, "Runaway wildcard in arm of state {}", state)
+            },
+            ConstructionError::OutcomeRedefinition(ref outcome) => {
+                write!(f, "{} symbol refedinition", outcome)
             }
         }
     }
@@ -174,6 +181,12 @@ pub fn construct_dtm(mut program: Program) -> ConstructionResult<TuringMachine> 
     let mut delta = Transitions::new();
 
     for (from, arms) in program.transitions.drain_all() {
+        if from == program.accept {
+            return Err(ConstructionError::OutcomeRedefinition(Outcome::Accept));
+        } else if from == program.reject {
+            return Err(ConstructionError::OutcomeRedefinition(Outcome::Reject));
+        }
+
         let mut t = check_arms(&from, arms, &states, &alphabet)?;
         delta.insert(from, t);
     }
