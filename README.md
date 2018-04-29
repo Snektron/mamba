@@ -16,7 +16,7 @@ Sadly it takes about 10 minutes to compile.
 
 The turing machine's delta function is read from a file and has the following structure:
 
-* Any `<movement>` represent the movement of the head, and consist of  `<`, `>` or `|` to respectively move left, right or not at all.
+* Any `<movement>` represent the movement of the head, and consist of  `<`, `>` or `!` to respectively move left, right or not at all.
 
 * Any `<state>` represents a state, which can consist of any combination alphanumeric characters.
 
@@ -41,7 +41,7 @@ The turing machine's delta function is read from a file and has the following st
     q0 {
         0 -> q1 1 >
         1 -> q0 _ <
-        _ -> q2 0 |
+        _ -> q2 0 !
     }
     ```
 
