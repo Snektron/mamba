@@ -10,7 +10,6 @@ lazy_static! {
 
 #[derive(Debug)]
 pub enum RuntimeError {
-    OutOfBounds,
     Finished,
     InvalidSymbol(TapeSymbol)
 }
@@ -18,7 +17,6 @@ pub enum RuntimeError {
 impl Error for RuntimeError {
     fn description(&self) -> &str {
         match *self {
-            RuntimeError::OutOfBounds => "out of bounds",
             RuntimeError::Finished => "finished",
             RuntimeError::InvalidSymbol(..) => "invalid symbol"
         }
@@ -28,7 +26,6 @@ impl Error for RuntimeError {
 impl fmt::Display for RuntimeError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            RuntimeError::OutOfBounds => write!(f, "Head moved out of bounds"),
             RuntimeError::Finished => write!(f, "Program is already finished"),
             RuntimeError::InvalidSymbol(ref symbol) => write!(f, "Invalid tape symbol {}", symbol)
         }
@@ -38,57 +35,71 @@ impl fmt::Display for RuntimeError {
 type RtResult<T> = Result<T, RuntimeError>;
 
 pub struct Tape {
-    cells: Vec<TapeSymbol>,
-    head: usize
+    negative: Vec<TapeSymbol>,
+    positive: Vec<TapeSymbol>,
+    head: isize
 }
 
 impl Tape {
     pub fn new(input: Vec<TapeSymbol>) -> Self {
         Self {
-            cells: input,
+            negative: Vec::new(),
+            positive: input,
             head: 0
         }
     }
 
-    pub fn left(&mut self) -> RtResult<()> {
-        if self.head == 0 {
-            Err(RuntimeError::OutOfBounds)
-        } else {
-            self.head -= 1;
-            Ok(())
+    pub fn left(&mut self) {
+        self.head -= 1;
+
+        while self.head < 0 && self.negative.len() <= (self.head.abs() - 1) as usize {
+            self.negative.push(TapeSymbol::Blanco)
         }
     }
 
     pub fn right(&mut self) {
         self.head += 1;
 
-        while self.cells.len() <= self.head {
-            self.cells.push(TapeSymbol::Blanco)
+        while self.head > 0 && self.positive.len() <= self.head as usize {
+            self.positive.push(TapeSymbol::Blanco)
         }
     }
 
-    pub fn mov(&mut self, mov: &Move) -> RtResult<()> {
+    pub fn mov(&mut self, mov: &Move){
         match *mov {
             Move::Left => self.left(),
-            Move::None => Ok(()),
-            Move::Right => {
-                self.right();
-                Ok(())
-            }
+            Move::None => {},
+            Move::Right => self.right()
         }
     }
 
     pub fn read(&self) -> &TapeSymbol {
-        &self.cells[self.head]
+        if self.head < 0 {
+            &self.negative[(self.head.abs() - 1) as usize]
+        } else {
+            &self.positive[self.head as usize]
+        }
     }
 
     pub fn write(&mut self, symbol: TapeSymbol) {
-        self.cells[self.head] = symbol;
+        if self.head < 0 {
+            self.negative[(self.head.abs() - 1) as usize] = symbol;
+        } else {
+            self.positive[self.head as usize] = symbol;
+        }
     }
 
     pub fn dump(&self) {
-        for (i, v) in self.cells.iter().enumerate() {
-            if i == self.head {
+        for (i, v) in self.negative.iter().enumerate() {
+            if i as isize == -self.head - 1{
+                print!("[{}]", v);
+            } else {
+                print!(" {} ", v);
+            }
+        }
+
+        for (i, v) in self.positive.iter().enumerate() {
+            if i as isize == self.head {
                 print!("[{}]", v);
             } else {
                 print!(" {} ", v);
@@ -182,7 +193,8 @@ impl<'t> Interpreter<'t> {
         if let Some(&(ref to, ref write, ref mov)) = self.dtm.get(self.state, &current) {
             self.state = to;
             self.tape.write(write.clone());
-            self.tape.mov(mov)
+            self.tape.mov(mov);
+            Ok(())
         } else {
             Err(RuntimeError::InvalidSymbol(current))
         }
@@ -203,6 +215,7 @@ impl<'t> Interpreter<'t> {
     }
 
     pub fn dump(&self) {
+        print!("{}\t", self.state);
         self.tape.dump()
     } 
 
