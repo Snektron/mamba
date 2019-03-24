@@ -1,5 +1,5 @@
 use ast::{Program, TransitionArm, Pattern};
-use dtm::{State, TapeSymbol, Symbol, Move, InputAlphabet};
+use dtm::{State, TapeSymbol, Symbol, Move, Alphabet};
 use utility::MultiMap;
 
 grammar;
@@ -48,7 +48,7 @@ ShortTransArm: TransitionArm = <read:Pattern> "->" <to:State> <write:Pattern> <m
         mov
     };
 
-Alphabet: InputAlphabet = "alphabet" ":" <List<Symbol>> ";" => <>;
+Alphabet: Alphabet = "alphabet" ":" <List<TapeSymbol>> ";" => <>;
 
 Accept: State = "accept" ":" <State> ";";
 
@@ -68,7 +68,7 @@ Symbol: Symbol = Ident => <>;
 
 State: State = Ident => <>;
 
-Ident: String = r"[0-9A-Za-z]+" => <>.to_owned();
+Ident: String = r"[a-zA-Z0-9_]*[a-zA-Z0-9][a-zA-Z0-9_]*" => <>.to_owned();
 
 Move: Move = {
     "<" => Move::Left,

@@ -5,7 +5,6 @@ use std::fmt;
 
 pub type State = String;
 pub type Symbol = String;
-pub type InputAlphabet = Vec<Symbol>;
 pub type Alphabet = Vec<TapeSymbol>;
 pub type Transition = HashMap<TapeSymbol, (State, TapeSymbol, Move)>;
 pub type Transitions = HashMap<State, Transition>;

@@ -1,7 +1,7 @@
 use std::collections::HashSet as Set;
 use std::error::Error;
 use std::fmt;
-use dtm::{TuringMachine, State, TapeSymbol, Symbol, Transition, Transitions, InputAlphabet, Alphabet};
+use dtm::{TuringMachine, State, TapeSymbol, Symbol, Transition, Transitions, Alphabet};
 use dtm::interpret::Outcome;
 use ast::{Program, TransitionArm, Pattern};
 
@@ -9,7 +9,7 @@ use ast::{Program, TransitionArm, Pattern};
 pub enum ConstructionError {
     MissingTransitions(State, Set<TapeSymbol>),
     Redefinition(State, Pattern),
-    DuplicateSymbol(Symbol),
+    DuplicateSymbol(TapeSymbol),
     UndefinedSymbol(Symbol),
     UndefinedState(State),
     WildcardInArm(State),
@@ -57,8 +57,8 @@ impl fmt::Display for ConstructionError {
             ConstructionError::Redefinition(ref state, ref symbol) => {
                 write!(f, "Redefinition of transition for state {}, symbol {}", state, symbol)
             },
-            ConstructionError::DuplicateSymbol(ref symbol) => {
-                write!(f, "Duplicate symbol {} in alphabet", symbol)
+            ConstructionError::DuplicateSymbol(ref tape_symbol) => {
+                write!(f, "Duplicate symbol {} in alphabet", tape_symbol)
             },
             ConstructionError::UndefinedSymbol(ref symbol) => {
                 write!(f, "Undefined symbol {}", symbol)
@@ -78,19 +78,17 @@ impl fmt::Display for ConstructionError {
 
 pub type ConstructionResult<T> = Result<T, ConstructionError>;
 
-fn check_alphabet(alphabet: InputAlphabet) -> ConstructionResult<Alphabet> {
+fn check_alphabet(alphabet: Alphabet) -> ConstructionResult<Alphabet> {
     let mut v = Vec::new();
+    v.push(TapeSymbol::Blanco);
 
     for symbol in alphabet {
-        let tape_symbol = TapeSymbol::Symbol(symbol.clone());
-        if v.contains(&tape_symbol) {
+        if v.contains(&symbol) {
             return Err(ConstructionError::DuplicateSymbol(symbol));
         } else {
-            v.push(tape_symbol);
+            v.push(symbol);
         }
     }
-
-    v.push(TapeSymbol::Blanco);
 
     Ok(v)
 }

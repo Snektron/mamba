@@ -2,10 +2,10 @@ pub mod construct;
 
 use std::fmt;
 use utility::MultiMap;
-use dtm::{InputAlphabet, State, Move, TapeSymbol};
+use dtm::{Alphabet, State, Move, TapeSymbol};
 
 pub struct Program {
-    pub alphabet: InputAlphabet,
+    pub alphabet: Alphabet,
     pub accept: State,
     pub reject: State,
     pub states: Vec<State>,

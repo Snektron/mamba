@@ -2,6 +2,8 @@ extern crate regex;
 extern crate clap;
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate lalrpop_util;
 
 mod ast;
 mod dtm;
